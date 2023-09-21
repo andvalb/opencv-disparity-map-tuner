@@ -25,9 +25,10 @@ Install the packages for Qt 5 and OpenCV. It should work out of the box.
 Download and install Qt 5 from their [website](http://www.qt.io/). I've installed OpenCV with [Homebrew](http://brew.sh/), but it probably doesn't matter if you install it with another way. This program uses `pkg-config` to include the library OpenCV in Qt's project. Since `pkg-config` is not standard on Mac OS X, to make it work, you will need to add `PATH=/usr/local/bin:$PATH` to the file `/etc/launchd.conf`. See [here](http://stackoverflow.com/questions/16972066/using-pkg-config-with-qt-creator-qmake-on-mac-osx) for details.
 
 ### Windows
-
-You will have to find out yourself how to include the library OpenCV in Qt, since `pkg-config` is not supported on Windows. I don't know ;)
-
+Replace "C:/.../vcpkg" with real path to vcpkg
+cd ./StereoCorrespondenceBMTuner
+cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DCMAKE_TOOLCHAIN_FILE=C:/.../vcpkg/scripts/buildsystems/vcpkg.cmake -DOpenCV_DIR="C:/.../vcpkg/installed/x64-windows/share/opencv"
+cmake --build build 
 
 ### Launch the program
 
