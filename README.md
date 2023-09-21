@@ -26,9 +26,16 @@ Download and install Qt 5 from their [website](http://www.qt.io/). I've installe
 
 ### Windows
 Replace "C:/.../vcpkg" with real path to vcpkg
-'cd ./StereoCorrespondenceBMTuner'
-'cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DCMAKE_TOOLCHAIN_FILE=C:/.../vcpkg/scripts/buildsystems/vcpkg.cmake -DOpenCV_DIR="C:/.../vcpkg/installed/x64-windows/share/opencv"'
-'cmake --build build'
+
+```
+cd ./StereoCorrespondenceBMTuner
+
+cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DCMAKE_TOOLCHAIN_FILE=C:/.../vcpkg/scripts/buildsystems/vcpkg.cmake -DOpenCV_DIR="C:/.../vcpkg/installed/x64-windows/share/opencv"'
+
+cmake --build build
+```
+
+
 
 ### Launch the program
 
