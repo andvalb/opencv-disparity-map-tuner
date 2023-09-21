@@ -25,4 +25,4 @@ QT_CONFIG -= no-pkg-config
 
 # we add the package opencv to pkg-config
 CONFIG += link_pkgconfig
-PKGCONFIG += opencv
+PKGCONFIG += opencv4
