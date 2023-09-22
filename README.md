@@ -18,7 +18,7 @@ You will need to install:
 
 ### Linux
 
-Install the packages for Qt 5 and OpenCV. It should work out of the box.
+Install the packages for Qt 5 and OpenCV. (qt5-default & libopencv-dev).
 ```
 cd ./StereoCorrespondenceBMTuner
 cmake -B "build"
