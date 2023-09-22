@@ -1,6 +1,55 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+QImage Mat2QImage(cv::Mat const& src)
+{
+    cv::Mat temp; // make the same cv::Mat
+    cvtColor(src, temp, cv::COLOR_BGR2RGB); // cvtColor Makes a copt, that what i need
+    QImage dest((const uchar*)temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+    dest.bits(); // enforce deep copy, see documentation 
+    // of QImage::QImage ( const uchar * data, int width, int height, Format format )
+    return dest;
+}
+
+cv::Mat QImage2Mat(QImage const& src)
+{
+    cv::Mat tmp(src.height(), src.width(), CV_8UC3, (uchar*)src.bits(), src.bytesPerLine());
+    cv::Mat result; // deep copy just in case (my lack of knowledge with open cv)
+    cvtColor(tmp, result, cv::COLOR_RGB2BGR);
+    return result;
+}
+
+template<typename T, typename U, typename V>
+inline cv::Scalar cvJetColourMat(T v, U vmin, V vmax) {
+    cv::Scalar c = cv::Scalar(1.0, 1.0, 1.0);  // white
+    T dv;
+
+    if (v < vmin)
+        v = vmin;
+    if (v > vmax)
+        v = vmax;
+    dv = vmax - vmin;
+
+    if (v < (vmin + 0.25 * dv)) {
+        c.val[0] = 0;
+        c.val[1] = 4 * (v - vmin) / dv;
+    }
+    else if (v < (vmin + 0.5 * dv)) {
+        c.val[0] = 0;
+        c.val[2] = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+    }
+    else if (v < (vmin + 0.75 * dv)) {
+        c.val[0] = 4 * (v - vmin - 0.5 * dv) / dv;
+        c.val[2] = 0;
+    }
+    else {
+        c.val[1] = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+        c.val[2] = 0;
+    }
+    return(c);
+}
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -127,36 +176,33 @@ void MainWindow::compute_depth_map() {
     }
 
     // we compute the depth map
-    cv::Mat disparity_16S;  // 16 bits, signed
+    cv::Mat disparity_16S, disparity;  // 16 bits, signed
     bmState->compute(left_image, right_image, disparity_16S);
 
     // we convert the depth map to a QPixmap, to display it in the QUI
     // first, we need to convert the disparity map to a more regular grayscale format
     // then, we convert to RGB, and finally, we can convert to a QImage and then a QPixmap
-
+ 
     // we normalize the values, so that they all fit in the range [0, 255]
-    cv::normalize(disparity_16S, disparity_16S, 0, 255, cv::NORM_MINMAX);
+    cv::normalize(disparity_16S, disparity_16S, 0, 255, cv::NORM_MINMAX, CV_8UC1);
 
-    // we convert the values from 16 bits signed to 8 bits unsigned
-    cv::Mat disp(disparity_16S.rows, disparity_16S.cols, CV_8UC1);
-    for (int i=0; i<disparity_16S.rows; i++)
-        for (int j=0; j<disparity_16S.cols; j++)
-            disp.at<unsigned char>(i,j) = (unsigned char)disparity_16S.at<short>(i,j);
+    // Scaling down the disparity values and normalizing them                                                                                                                                                                                                                     disparity = (disparity/16.0f - (float)minDisparity)/((float)numDisparities);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // Displaying the disparity map                                                                                                                                                                                                                                               cv::imshow("disparity",disparity);
+    cv::normalize(disparity_16S, disparity, 0, 255, cv::NORM_MINMAX, CV_8UC1);
 
     // we convert from gray to color
     cv::Mat disp_color;
-    cv::cvtColor(disp, disp_color, cv::COLOR_GRAY2RGB);
+    applyColorMap(disparity, disp_color, cv::COLORMAP_JET);
+
 
     // we finally can convert the image to a QPixmap and display it
-    QImage disparity_image = QImage((unsigned char*) disp_color.data, disp_color.cols, disp_color.rows, QImage::Format_RGB888);
+    QImage disparity_image = Mat2QImage(disp_color);
+    //QImage img((uchar*)mat.data, mat.cols, mat.rows, mat.step1(), QImage::Format_RGB32);
     QPixmap disparity_pixmap = QPixmap::fromImage(disparity_image);
 
     // some computation to resize the image if it is too big to fit in the GUI
-    int max_width  = std::min(ui->label_depth_map->maximumWidth(),  disparity_image.width());
+    int max_width = std::min(ui->label_depth_map->maximumWidth(), disparity_image.width());
     int max_height = std::min(ui->label_depth_map->maximumHeight(), disparity_image.height());
     ui->label_depth_map->setPixmap(disparity_pixmap.scaled(max_width, max_height, Qt::KeepAspectRatio));
-
-    ui->label_depth_map->setPixmap(disparity_pixmap);
 }
 
 
