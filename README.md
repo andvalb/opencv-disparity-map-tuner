@@ -19,6 +19,11 @@ You will need to install:
 ### Linux
 
 Install the packages for Qt 5 and OpenCV. It should work out of the box.
+```
+cd ./StereoCorrespondenceBMTuner
+cmake -B "build"
+cmake --build build
+```
 
 ### Mac OS X
 
